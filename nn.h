@@ -18,14 +18,7 @@
 #define NN_ASSERT assert
 #endif // NN_ASSERT
 
-/*typedef struct {*/
-/*    size_t count;*/
-/*    Matrix* ws;*/
-/*    Matrix* bs;*/
-/*    Matrix* as; // The amount of activations is count+1*/
-/*} NN;*/
-
-typedef enum LAYER_TYPE{
+typedef enum LAYER_TYPE {
     LAYER_TYPE_INPUT,
     LAYER_TYPE_OUTPUT,
     LAYER_TYPE_HIDDEN,
@@ -33,11 +26,44 @@ typedef enum LAYER_TYPE{
 
 typedef struct NN_Layer {
     LAYER_TYPE layerType;
+    struct NN_Layer* prev;
+    struct NN_Layer* next;
+
+    int depth;
+    int width;
+    int height;
+
+    int nodeCnt;
+    Matrix* output;
+    Matrix* gs; // The gradients
+
+    Matrix* ws;
+    Matrix* bs;
+
+    // The updates to weights/bias
+    Matrix* wsu;
+    Matrix* bsu;
+
+    union {
+        struct {
+
+        } full;
+
+        struct {
+            int kernelSize;
+            int paddingSize;
+            int stride;
+        } conv;
+    };
 } NN_Layer;
 
 typedef struct NN {
     NN_Layer* layers;
+    int layerCnt;
 } NN;
+
+void layerCreateInput(NN* nn, int width, int height, int depth);
+void layerCreateFull(NN* nn, int nodeCnt, char fillWithRand);
 
 /*#define NN_INPUT(nn) (nn).as[0]*/
 /*#define NN_OUTPUT(nn) (nn).as[(nn).count]*/
